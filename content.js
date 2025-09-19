@@ -1,80 +1,84 @@
-// Store original window.open function before any site scripts can override it
-const originalWindowOpen = window.open;
+// Function to run all extension logic
+function runExtensionLogic() {
+    // Store original window.open function before any site scripts can override it
+    const originalWindowOpen = window.open;
 
-// Create a more bulletproof window.open override
-(function() {
-    'use strict';
-    
-    // Define the override function
-    const newWindowOpen = function(url, target, features) {
-        console.log('🚫 Intercepted window.open call:', { url, target, features, stack: new Error().stack });
+    // Create a more bulletproof window.open override
+    (function() {
+        'use strict';
         
-        // If URL is provided, navigate to it in the same tab
-        if (url && url !== 'about:blank') {
-            try {
-                // Handle different URL formats
-                let finalUrl;
-                if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
-                    finalUrl = new URL(url, window.location.href).href;
-                } else if (url.startsWith('http') || url.startsWith('//')) {
-                    finalUrl = url;
-                } else if (url.includes('.') || url.includes('?')) {
-                    // Likely a relative URL or query string
-                    finalUrl = new URL(url, window.location.href).href;
-                } else {
-                    finalUrl = url;
+        // Define the override function
+        const newWindowOpen = function(url, target, features) {
+            console.log('🚫 Intercepted window.open call:', { url, target, features, stack: new Error().stack });
+            
+            // If URL is provided, navigate to it in the same tab
+            if (url && url !== 'about:blank') {
+                try {
+                    // Handle different URL formats
+                    let finalUrl;
+                    if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
+                        finalUrl = new URL(url, window.location.href).href;
+                    } else if (url.startsWith('http') || url.startsWith('//')) {
+                        finalUrl = url;
+                    } else if (url.includes('.') || url.includes('?')) {
+                        // Likely a relative URL or query string
+                        finalUrl = new URL(url, window.location.href).href;
+                    } else {
+                        finalUrl = url;
+                    }
+                    
+                    if (extensionSettings.mode === 'block') {
+                        showNotification('Blocked new tab attempt', finalUrl);
+                    } else {
+                        showNotification('Redirecting to same tab', finalUrl);
+                    }
+                } catch (e) {
+                    console.warn('Error processing URL:', e);
+                    if (extensionSettings.mode !== 'block') {
+                        window.location.href = url;
+                    }
                 }
-                
-                if (extensionSettings.mode === 'block') {
-                    showNotification('Blocked new tab attempt', finalUrl);
-                } else {
-                    showNotification('Redirecting to same tab', finalUrl);
-                }
-            } catch (e) {
-                console.warn('Error processing URL:', e);
-                window.location.href = url;
             }
+            
+            // Return a more complete mock window object
+            return {
+                focus: function() { console.log('Mock window focus called'); },
+                blur: function() { console.log('Mock window blur called'); },
+                close: function() { console.log('Mock window close called'); },
+                closed: false,
+                location: { 
+                    href: url || '',
+                    assign: function(u) { if (extensionSettings.mode !== 'block') window.location.href = u; },
+                    replace: function(u) { if (extensionSettings.mode !== 'block') window.location.replace(u); }
+                },
+                document: { write: function() {}, writeln: function() {} },
+                postMessage: function() {},
+                addEventListener: function() {},
+                removeEventListener: function() {}
+            };
+        };
+        
+        // Override window.open multiple ways to ensure it sticks
+        try {
+            Object.defineProperty(window, 'open', {
+                value: newWindowOpen,
+                writable: false,
+                configurable: false
+            });
+        } catch (e) {
+            // Fallback if defineProperty fails
+            window.open = newWindowOpen;
         }
         
-        // Return a more complete mock window object
-        return {
-            focus: function() { console.log('Mock window focus called'); },
-            blur: function() { console.log('Mock window blur called'); },
-            close: function() { console.log('Mock window close called'); },
-            closed: false,
-            location: { 
-                href: url || '',
-                assign: function(u) { window.location.href = u; },
-                replace: function(u) { window.location.replace(u); }
-            },
-            document: { write: function() {}, writeln: function() {} },
-            postMessage: function() {},
-            addEventListener: function() {},
-            removeEventListener: function() {}
-        };
-    };
-    
-    // Override window.open multiple ways to ensure it sticks
-    try {
-        Object.defineProperty(window, 'open', {
-            value: newWindowOpen,
-            writable: false,
-            configurable: false
-        });
-    } catch (e) {
-        // Fallback if defineProperty fails
-        window.open = newWindowOpen;
-    }
-    
-    // Also override on Window prototype if possible
-    try {
-        if (Window.prototype.open) {
-            Window.prototype.open = newWindowOpen;
+        // Also override on Window prototype if possible
+        try {
+            if (Window.prototype.open) {
+                Window.prototype.open = newWindowOpen;
+            }
+        } catch (e) {
+            console.log('Could not override Window.prototype.open');
         }
-    } catch (e) {
-        console.log('Could not override Window.prototype.open');
-    }
-})();
+    })();
 
 // Function to clean up links
 function cleanupLinks(container = document) {
@@ -476,35 +480,36 @@ function addSiteSpecificHandlers() {
     }
 }
 
-// Run site-specific handlers
-addSiteSpecificHandlers();
+    // Run site-specific handlers
+    addSiteSpecificHandlers();
 
-// Periodic cleanup for stubborn sites (every 2 seconds)
-setInterval(function() {
-    cleanupLinks();
-}, 2000);
+    // Periodic cleanup for stubborn sites (every 2 seconds)
+    setInterval(function() {
+        cleanupLinks();
+    }, 2000);
 
-// Additional aggressive cleanup for very stubborn sites
-setInterval(function() {
-    // Remove any target="_blank" that might have been re-added
-    document.querySelectorAll('[target="_blank"]').forEach(el => {
-        el.removeAttribute('target');
-    });
-    
-    // Mark buttons with new tab indicators
-    document.querySelectorAll('button, input[type="button"], input[type="submit"]').forEach(button => {
-        const ariaLabel = button.getAttribute('aria-label') || '';
-        const title = button.getAttribute('title') || '';
+    // Additional aggressive cleanup for very stubborn sites
+    setInterval(function() {
+        // Remove any target="_blank" that might have been re-added
+        document.querySelectorAll('[target="_blank"]').forEach(el => {
+            el.removeAttribute('target');
+        });
         
-        if (ariaLabel.toLowerCase().includes('new tab') || 
-            ariaLabel.toLowerCase().includes('new window') ||
-            title.toLowerCase().includes('new tab') ||
-            title.toLowerCase().includes('new window')) {
+        // Mark buttons with new tab indicators
+        document.querySelectorAll('button, input[type="button"], input[type="submit"]').forEach(button => {
+            const ariaLabel = button.getAttribute('aria-label') || '';
+            const title = button.getAttribute('title') || '';
             
-            button.setAttribute('data-force-same-tab', 'true');
-        }
-    });
-}, 5000);
+            if (ariaLabel.toLowerCase().includes('new tab') || 
+                ariaLabel.toLowerCase().includes('new window') ||
+                title.toLowerCase().includes('new tab') ||
+                title.toLowerCase().includes('new window')) {
+                
+                button.setAttribute('data-force-same-tab', 'true');
+            }
+        });
+    }, 5000);
+}
 
 // Settings management
 let extensionSettings = {
@@ -609,22 +614,34 @@ async function updateStats() {
 // Listen for settings updates
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'updateSettings') {
+        const oldEnabled = extensionSettings.enabled;
         extensionSettings = { ...extensionSettings, ...message.settings };
         console.log('📱 Settings updated:', extensionSettings);
         
-        // Reload the page if extension was disabled/enabled
-        if (!shouldRunOnCurrentSite()) {
+        // Reload the page if extension was disabled/enabled or site settings changed
+        if (!shouldRunOnCurrentSite() || (oldEnabled !== extensionSettings.enabled)) {
             console.log('🔄 Reloading page due to settings change');
             window.location.reload();
         }
     }
 });
 
-// Initialize extension
+// Initialize extension only after settings are loaded
 loadSettings().then(shouldRun => {
     if (!shouldRun) {
+        console.log('🚫 Extension disabled - not intercepting links');
         return;
     }
     
     console.log('🚀 Force Links Same Tab: Enhanced script loaded with settings support');
+    
+    // Only run the extension functionality if enabled
+    initializeExtension();
 });
+
+
+// Function to initialize all extension functionality
+function initializeExtension() {
+    // Only run the extension logic if enabled
+    runExtensionLogic();
+}
