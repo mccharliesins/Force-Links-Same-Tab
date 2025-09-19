@@ -9,7 +9,19 @@
   },
   "action": {
     "default_title": "Force links to open in same tab",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "ForceTabs.png",
+      "32": "ForceTabs.png",
+      "48": "ForceTabs.png",
+      "128": "ForceTabs.png"
+    }
+  },
+  "icons": {
+    "16": "ForceTabs.png",
+    "32": "ForceTabs.png",
+    "48": "ForceTabs.png",
+    "128": "ForceTabs.png"
   },
   "content_scripts": [
     {
