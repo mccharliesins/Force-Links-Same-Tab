@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Links Same Tab</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Force Links Same Tab</h1>
+            <div class="status-indicator">
+                <span class="status-text" id="statusText">Active</span>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="extensionEnabled" checked>
+                    <label for="extensionEnabled" class="slider"></label>
+                </div>
+            </div>
+        </header>
+
+        <div class="section">
+            <h3>Quick Settings</h3>
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="enableForAllSites" checked>
+                    <span class="checkmark"></span>
+                    Enable for all websites
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="showNotifications" checked>
+                    <span class="checkmark"></span>
+                    Show interception notifications
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="aggressiveMode">
+                    <span class="checkmark"></span>
+                    Aggressive mode (for stubborn sites)
+                </label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Site Management</h3>
+            <div class="site-controls">
+                <button id="addCurrentSite" class="btn btn-primary">
+                    Add Current Site to Whitelist
+                </button>
+                <button id="addCurrentSiteBlacklist" class="btn btn-secondary">
+                    Add Current Site to Blacklist
+                </button>
+            </div>
+            
+            <div class="current-site">
+                <span>Current site: </span>
+                <span id="currentSiteDisplay">Loading...</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Whitelist (Always Enable)</h3>
+            <div class="site-list" id="whitelistContainer">
+                <div class="empty-state">No sites in whitelist</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Blacklist (Never Enable)</h3>
+            <div class="site-list" id="blacklistContainer">
+                <div class="empty-state">No sites in blacklist</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalInterceptions">0</span>
+                    <span class="stat-label">Links Intercepted</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="todayInterceptions">0</span>
+                    <span class="stat-label">Today</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="activeSites">0</span>
+                    <span class="stat-label">Active Sites</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Smart Features</h3>
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="smartJobSites" checked>
+                    <span class="checkmark"></span>
+                    Enhanced job site support (Indeed, LinkedIn)
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="smartSocialMedia">
+                    <span class="checkmark"></span>
+                    Social media link handling
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label class="setting-label">
+                    <input type="checkbox" id="smartShopping">
+                    <span class="checkmark"></span>
+                    E-commerce site optimization
+                </label>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-buttons">
+                <button id="resetSettings" class="btn btn-outline">Reset All Settings</button>
+                <button id="exportSettings" class="btn btn-outline">Export Settings</button>
+            </div>
+            <div class="version">Version 1.0</div>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
