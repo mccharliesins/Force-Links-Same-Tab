@@ -29,6 +29,7 @@ function runExtensionLogic() {
                     
                     if (extensionSettings.mode === 'block') {
                         showNotification('Blocked new tab attempt', finalUrl);
+                        // Don't navigate anywhere in block mode
                     } else {
                         showNotification('Redirecting to same tab', finalUrl);
                     }
@@ -178,11 +179,16 @@ document.addEventListener('click', function (event) {
             
             // If we have a direct URL, use it immediately
             if (dataHref && indicatesNewTab) {
-                console.log('🔄 Direct navigation from data attribute:', dataHref);
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                window.location.href = dataHref;
+                
+                if (extensionSettings.mode === 'block') {
+                    showNotification('Blocked button navigation', dataHref);
+                } else {
+                    console.log('🔄 Direct navigation from data attribute:', dataHref);
+                    window.location.href = dataHref;
+                }
                 return false;
             }
             
@@ -204,16 +210,24 @@ document.addEventListener('click', function (event) {
                     
                     if (jobId) {
                         const applyUrl = `${window.location.origin}/viewjob?jk=${jobId}`;
-                        console.log('🔄 General handler navigating to Indeed job:', applyUrl);
-                        window.location.href = applyUrl;
+                        if (extensionSettings.mode === 'block') {
+                            showNotification('Blocked Indeed job application', applyUrl);
+                        } else {
+                            console.log('🔄 General handler navigating to Indeed job:', applyUrl);
+                            window.location.href = applyUrl;
+                        }
                     } else {
                         // Fallback to current job if we're already on a job page
                         const urlParams = new URLSearchParams(window.location.search);
                         const currentJobId = urlParams.get('jk');
                         if (currentJobId) {
                             const applyUrl = `${window.location.origin}/viewjob?jk=${currentJobId}`;
-                            console.log('🔄 Using current job ID:', applyUrl);
-                            window.location.href = applyUrl;
+                            if (extensionSettings.mode === 'block') {
+                                showNotification('Blocked Indeed job application', applyUrl);
+                            } else {
+                                console.log('🔄 Using current job ID:', applyUrl);
+                                window.location.href = applyUrl;
+                            }
                         }
                     }
                     return false;
@@ -236,8 +250,12 @@ document.addEventListener('click', function (event) {
                     ].filter(Boolean);
                     
                     if (possibleUrls.length > 0 && window.location.href === window.location.href) {
-                        console.log('🔄 Fallback navigation to:', possibleUrls[0]);
-                        window.location.href = possibleUrls[0];
+                        if (extensionSettings.mode === 'block') {
+                            showNotification('Blocked fallback navigation', possibleUrls[0]);
+                        } else {
+                            console.log('🔄 Fallback navigation to:', possibleUrls[0]);
+                            window.location.href = possibleUrls[0];
+                        }
                     }
                 }, 100); // Longer delay to let original handlers complete
                 
@@ -428,8 +446,12 @@ function addSiteSpecificHandlers() {
                             
                             if (jobId) {
                                 const applyUrl = `${window.location.origin}/viewjob?jk=${jobId}`;
-                                console.log('🔄 Navigating to Indeed job page:', applyUrl);
-                                window.location.href = applyUrl;
+                                if (extensionSettings.mode === 'block') {
+                                    showNotification('Blocked Indeed apply button', applyUrl);
+                                } else {
+                                    console.log('🔄 Navigating to Indeed job page:', applyUrl);
+                                    window.location.href = applyUrl;
+                                }
                             } else {
                                 // Fallback: try to extract from current URL or page
                                 const urlParams = new URLSearchParams(window.location.search);
@@ -437,12 +459,20 @@ function addSiteSpecificHandlers() {
                                 
                                 if (currentJobId) {
                                     const applyUrl = `${window.location.origin}/viewjob?jk=${currentJobId}`;
-                                    console.log('🔄 Using current job ID for navigation:', applyUrl);
-                                    window.location.href = applyUrl;
+                                    if (extensionSettings.mode === 'block') {
+                                        showNotification('Blocked Indeed apply button', applyUrl);
+                                    } else {
+                                        console.log('🔄 Using current job ID for navigation:', applyUrl);
+                                        window.location.href = applyUrl;
+                                    }
                                 } else {
-                                    console.warn('⚠️ Could not find job ID for Indeed apply button');
-                                    // Last resort: just reload the page
-                                    window.location.reload();
+                                    if (extensionSettings.mode === 'block') {
+                                        showNotification('Blocked Indeed navigation attempt', window.location.href);
+                                    } else {
+                                        console.warn('⚠️ Could not find job ID for Indeed apply button');
+                                        // Last resort: just reload the page
+                                        window.location.reload();
+                                    }
                                 }
                             }
                         }, true); // Use capture phase to intercept early
@@ -570,17 +600,156 @@ function showNotification(message, url) {
     // Handle different modes
     if (extensionSettings.mode === 'block') {
         console.log('🚫 Block mode: Preventing navigation');
-        // In block mode, we just prevent the action without navigating
+        // In block mode, show popup notification and prevent navigation
+        showBlockedPopup(url);
+        updateStats();
         return false;
     } else {
         // Redirect mode: navigate to the URL in same tab
         if (url) {
             window.location.href = url;
         }
+        updateStats();
+    }
+}
+
+// Show visual popup notification for blocked links
+function showBlockedPopup(url) {
+    // Remove any existing popup
+    const existingPopup = document.getElementById('forceLinksSameTabPopup');
+    if (existingPopup) {
+        existingPopup.remove();
     }
     
-    // Update statistics
-    updateStats();
+    // Create popup element
+    const popup = document.createElement('div');
+    popup.id = 'forceLinksSameTabPopup';
+    popup.innerHTML = `
+        <div class="flst-popup-content">
+            <div class="flst-popup-icon">🚫</div>
+            <div class="flst-popup-message">
+                <strong>Popup Blocked</strong>
+                <div class="flst-popup-url">${url ? new URL(url).hostname : 'New tab attempt'}</div>
+            </div>
+            <button class="flst-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+    `;
+    
+    // Add CSS styles
+    const style = document.createElement('style');
+    style.textContent = `
+        #forceLinksSameTabPopup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999999;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(238, 90, 82, 0.3);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            animation: flstSlideIn 0.3s ease-out;
+            max-width: 320px;
+            min-width: 280px;
+        }
+        
+        .flst-popup-content {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            gap: 12px;
+        }
+        
+        .flst-popup-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .flst-popup-message {
+            flex: 1;
+        }
+        
+        .flst-popup-message strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .flst-popup-url {
+            font-size: 12px;
+            opacity: 0.9;
+            word-break: break-all;
+        }
+        
+        .flst-popup-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background-color 0.2s;
+        }
+        
+        .flst-popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes flstSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes flstSlideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .flst-popup-closing {
+            animation: flstSlideOut 0.3s ease-in forwards;
+        }
+    `;
+    
+    // Add styles to head if not already present
+    if (!document.getElementById('forceLinksSameTabStyles')) {
+        style.id = 'forceLinksSameTabStyles';
+        document.head.appendChild(style);
+    }
+    
+    // Add popup to page
+    document.body.appendChild(popup);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (popup && popup.parentElement) {
+            popup.classList.add('flst-popup-closing');
+            setTimeout(() => {
+                if (popup && popup.parentElement) {
+                    popup.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
 }
 
 // Update statistics
