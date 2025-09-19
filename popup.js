@@ -1,14 +1,10 @@
 // Default settings
 const defaultSettings = {
     enabled: true,
-    enableForAllSites: true,
-    showNotifications: true,
-    aggressiveMode: false,
-    smartJobSites: true,
-    smartSocialMedia: false,
-    smartShopping: false,
-    whitelist: [],
-    blacklist: [],
+    mode: 'redirect', // 'redirect' or 'block'
+    enhancedJobSites: true,
+    alwaysOn: [], // sites where extension always works
+    alwaysOff: [], // sites where extension never works
     stats: {
         totalInterceptions: 0,
         todayInterceptions: 0,
@@ -32,17 +28,14 @@ function initializeElements() {
     elements = {
         extensionEnabled: document.getElementById('extensionEnabled'),
         statusText: document.getElementById('statusText'),
-        enableForAllSites: document.getElementById('enableForAllSites'),
-        showNotifications: document.getElementById('showNotifications'),
-        aggressiveMode: document.getElementById('aggressiveMode'),
-        smartJobSites: document.getElementById('smartJobSites'),
-        smartSocialMedia: document.getElementById('smartSocialMedia'),
-        smartShopping: document.getElementById('smartShopping'),
-        addCurrentSite: document.getElementById('addCurrentSite'),
-        addCurrentSiteBlacklist: document.getElementById('addCurrentSiteBlacklist'),
+        modeRedirect: document.getElementById('modeRedirect'),
+        modeBlock: document.getElementById('modeBlock'),
+        enhancedJobSites: document.getElementById('enhancedJobSites'),
+        addToAlwaysOn: document.getElementById('addToAlwaysOn'),
+        addToAlwaysOff: document.getElementById('addToAlwaysOff'),
         currentSiteDisplay: document.getElementById('currentSiteDisplay'),
-        whitelistContainer: document.getElementById('whitelistContainer'),
-        blacklistContainer: document.getElementById('blacklistContainer'),
+        alwaysOnContainer: document.getElementById('alwaysOnContainer'),
+        alwaysOffContainer: document.getElementById('alwaysOffContainer'),
         totalInterceptions: document.getElementById('totalInterceptions'),
         todayInterceptions: document.getElementById('todayInterceptions'),
         activeSites: document.getElementById('activeSites'),
@@ -59,16 +52,19 @@ async function loadSettings() {
         // Update UI elements
         elements.extensionEnabled.checked = settings.enabled;
         elements.statusText.textContent = settings.enabled ? 'Active' : 'Disabled';
-        elements.enableForAllSites.checked = settings.enableForAllSites;
-        elements.showNotifications.checked = settings.showNotifications;
-        elements.aggressiveMode.checked = settings.aggressiveMode;
-        elements.smartJobSites.checked = settings.smartJobSites;
-        elements.smartSocialMedia.checked = settings.smartSocialMedia;
-        elements.smartShopping.checked = settings.smartShopping;
+        
+        // Update mode selection
+        if (settings.mode === 'block') {
+            elements.modeBlock.checked = true;
+        } else {
+            elements.modeRedirect.checked = true;
+        }
+        
+        elements.enhancedJobSites.checked = settings.enhancedJobSites;
         
         // Update site lists
-        updateSiteList('whitelist', settings.whitelist);
-        updateSiteList('blacklist', settings.blacklist);
+        updateSiteList('alwaysOn', settings.alwaysOn);
+        updateSiteList('alwaysOff', settings.alwaysOff);
         
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -79,12 +75,8 @@ async function saveSettings() {
     try {
         const settings = {
             enabled: elements.extensionEnabled.checked,
-            enableForAllSites: elements.enableForAllSites.checked,
-            showNotifications: elements.showNotifications.checked,
-            aggressiveMode: elements.aggressiveMode.checked,
-            smartJobSites: elements.smartJobSites.checked,
-            smartSocialMedia: elements.smartSocialMedia.checked,
-            smartShopping: elements.smartShopping.checked
+            mode: elements.modeBlock.checked ? 'block' : 'redirect',
+            enhancedJobSites: elements.enhancedJobSites.checked
         };
         
         await chrome.storage.sync.set(settings);
@@ -193,9 +185,13 @@ async function addSiteToList(listType, site) {
             await chrome.storage.sync.set({ [listType]: list });
             updateSiteList(listType, list);
             
-            // Remove from opposite list if present
-            const oppositeList = listType === 'whitelist' ? 'blacklist' : 'whitelist';
+            // Automatically remove from opposite list if present
+            const oppositeList = listType === 'alwaysOn' ? 'alwaysOff' : 'alwaysOn';
             await removeSiteFromList(oppositeList, site, false);
+            
+            // Reload the opposite list to show the change
+            const oppositeResult = await chrome.storage.sync.get([oppositeList]);
+            updateSiteList(oppositeList, oppositeResult[oppositeList] || []);
         }
     } catch (error) {
         console.error('Error adding site to list:', error);
@@ -219,26 +215,24 @@ async function removeSiteFromList(listType, site, updateUI = true) {
 }
 
 function setupEventListeners() {
-    // Settings checkboxes
-    [
-        'extensionEnabled', 'enableForAllSites', 'showNotifications', 
-        'aggressiveMode', 'smartJobSites', 'smartSocialMedia', 'smartShopping'
-    ].forEach(id => {
-        elements[id].addEventListener('change', saveSettings);
-    });
+    // Settings controls
+    elements.extensionEnabled.addEventListener('change', saveSettings);
+    elements.modeRedirect.addEventListener('change', saveSettings);
+    elements.modeBlock.addEventListener('change', saveSettings);
+    elements.enhancedJobSites.addEventListener('change', saveSettings);
     
     // Site management buttons
-    elements.addCurrentSite.addEventListener('click', async () => {
+    elements.addToAlwaysOn.addEventListener('click', async () => {
         const site = elements.currentSiteDisplay.textContent;
         if (site && site !== 'Unable to detect' && site !== 'Loading...') {
-            await addSiteToList('whitelist', site);
+            await addSiteToList('alwaysOn', site);
         }
     });
     
-    elements.addCurrentSiteBlacklist.addEventListener('click', async () => {
+    elements.addToAlwaysOff.addEventListener('click', async () => {
         const site = elements.currentSiteDisplay.textContent;
         if (site && site !== 'Unable to detect' && site !== 'Loading...') {
-            await addSiteToList('blacklist', site);
+            await addSiteToList('alwaysOff', site);
         }
     });
     

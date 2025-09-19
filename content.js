@@ -25,8 +25,11 @@ const originalWindowOpen = window.open;
                     finalUrl = url;
                 }
                 
-                showNotification('Redirecting to same tab', finalUrl);
-                window.location.href = finalUrl;
+                if (extensionSettings.mode === 'block') {
+                    showNotification('Blocked new tab attempt', finalUrl);
+                } else {
+                    showNotification('Redirecting to same tab', finalUrl);
+                }
             } catch (e) {
                 console.warn('Error processing URL:', e);
                 window.location.href = url;
@@ -134,11 +137,15 @@ document.addEventListener('click', function (event) {
                                (rel && (rel.includes('noopener') || rel.includes('external')));
             
             if (opensNewTab && href) {
-                showNotification('Blocking new tab link, redirecting to same tab', href);
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                window.location.href = href;
+                
+                if (extensionSettings.mode === 'block') {
+                    showNotification('Blocked new tab link', href);
+                } else {
+                    showNotification('Redirecting link to same tab', href);
+                }
                 return false;
             }
         } 
@@ -502,14 +509,10 @@ setInterval(function() {
 // Settings management
 let extensionSettings = {
     enabled: true,
-    enableForAllSites: true,
-    showNotifications: true,
-    aggressiveMode: false,
-    smartJobSites: true,
-    smartSocialMedia: false,
-    smartShopping: false,
-    whitelist: [],
-    blacklist: []
+    mode: 'redirect', // 'redirect' or 'block'
+    enhancedJobSites: true,
+    alwaysOn: [], // sites where extension always works
+    alwaysOff: [] // sites where extension never works
 };
 
 let interceptedCount = 0;
@@ -541,24 +544,34 @@ function shouldRunOnCurrentSite() {
         return false;
     }
     
-    // Check blacklist first
-    if (extensionSettings.blacklist.some(site => currentHostname.includes(site))) {
+    // Check alwaysOff list first (highest priority)
+    if (extensionSettings.alwaysOff.some(site => currentHostname.includes(site))) {
         return false;
     }
     
-    // If whitelist exists and site is not in it, don't run (unless enableForAllSites is true)
-    if (extensionSettings.whitelist.length > 0 && !extensionSettings.enableForAllSites) {
-        return extensionSettings.whitelist.some(site => currentHostname.includes(site));
+    // Check alwaysOn list (second priority)
+    if (extensionSettings.alwaysOn.some(site => currentHostname.includes(site))) {
+        return true;
     }
     
-    // If whitelist exists but enableForAllSites is true, run everywhere except blacklisted
+    // Default: run on all sites
     return true;
 }
 
-// Show notification if enabled
+// Show notification and handle different modes
 function showNotification(message, url) {
-    if (extensionSettings.showNotifications) {
-        console.log(`🔄 ${message}:`, url);
+    console.log(`🔄 ${message}:`, url);
+    
+    // Handle different modes
+    if (extensionSettings.mode === 'block') {
+        console.log('🚫 Block mode: Preventing navigation');
+        // In block mode, we just prevent the action without navigating
+        return false;
+    } else {
+        // Redirect mode: navigate to the URL in same tab
+        if (url) {
+            window.location.href = url;
+        }
     }
     
     // Update statistics

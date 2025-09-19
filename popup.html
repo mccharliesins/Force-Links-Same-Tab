@@ -20,60 +20,56 @@
         </header>
 
         <div class="section">
-            <h3>Quick Settings</h3>
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="enableForAllSites" checked>
-                    <span class="checkmark"></span>
-                    Enable for all websites
+            <h3>Mode</h3>
+            <div class="mode-selector">
+                <label class="mode-option">
+                    <input type="radio" name="mode" id="modeRedirect" value="redirect" checked>
+                    <span class="radio-mark"></span>
+                    <div class="mode-content">
+                        <strong>Redirect Mode</strong>
+                        <small>Open links in same tab</small>
+                    </div>
                 </label>
-            </div>
-            
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="showNotifications" checked>
-                    <span class="checkmark"></span>
-                    Show interception notifications
-                </label>
-            </div>
-
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="aggressiveMode">
-                    <span class="checkmark"></span>
-                    Aggressive mode (for stubborn sites)
+                
+                <label class="mode-option">
+                    <input type="radio" name="mode" id="modeBlock" value="block">
+                    <span class="radio-mark"></span>
+                    <div class="mode-content">
+                        <strong>Block Mode</strong>
+                        <small>Completely prevent new tabs</small>
+                    </div>
                 </label>
             </div>
         </div>
 
         <div class="section">
-            <h3>Site Management</h3>
-            <div class="site-controls">
-                <button id="addCurrentSite" class="btn btn-primary">
-                    Add Current Site to Whitelist
-                </button>
-                <button id="addCurrentSiteBlacklist" class="btn btn-secondary">
-                    Add Current Site to Blacklist
-                </button>
-            </div>
-            
+            <h3>Site Control</h3>
             <div class="current-site">
                 <span>Current site: </span>
                 <span id="currentSiteDisplay">Loading...</span>
             </div>
-        </div>
-
-        <div class="section">
-            <h3>Whitelist (Always Enable)</h3>
-            <div class="site-list" id="whitelistContainer">
-                <div class="empty-state">No sites in whitelist</div>
+            
+            <div class="site-controls">
+                <button id="addToAlwaysOn" class="btn btn-success">
+                    Always ON for this site
+                </button>
+                <button id="addToAlwaysOff" class="btn btn-danger">
+                    Always OFF for this site
+                </button>
             </div>
         </div>
 
         <div class="section">
-            <h3>Blacklist (Never Enable)</h3>
-            <div class="site-list" id="blacklistContainer">
-                <div class="empty-state">No sites in blacklist</div>
+            <h3>Always ON Sites</h3>
+            <div class="site-list" id="alwaysOnContainer">
+                <div class="empty-state">Extension will always work on these sites</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Always OFF Sites</h3>
+            <div class="site-list" id="alwaysOffContainer">
+                <div class="empty-state">Extension will never work on these sites</div>
             </div>
         </div>
 
@@ -96,28 +92,12 @@
         </div>
 
         <div class="section">
-            <h3>Smart Features</h3>
+            <h3>Options</h3>
             <div class="setting-item">
                 <label class="setting-label">
-                    <input type="checkbox" id="smartJobSites" checked>
+                    <input type="checkbox" id="enhancedJobSites" checked>
                     <span class="checkmark"></span>
-                    Enhanced job site support (Indeed, LinkedIn)
-                </label>
-            </div>
-            
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="smartSocialMedia">
-                    <span class="checkmark"></span>
-                    Social media link handling
-                </label>
-            </div>
-
-            <div class="setting-item">
-                <label class="setting-label">
-                    <input type="checkbox" id="smartShopping">
-                    <span class="checkmark"></span>
-                    E-commerce site optimization
+                    Enhanced support for job sites
                 </label>
             </div>
         </div>
