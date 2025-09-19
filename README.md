@@ -15,7 +15,7 @@ This extension ensures that all links, buttons, and clickable elements that woul
 ## Key Features
 
 - **Universal Link Handling**: Processes all types of links and clickable elements across all websites
-- **Dual Operation Modes**: Choose between Redirect Mode (open in same tab) or Block Mode (prevent new tabs completely)
+- **Redirect Mode**: Opens all links that would open in new tabs in the same tab instead
 - **JavaScript Interception**: Bulletproof `window.open()` override that catches all new tab attempts
 - **Smart Site Management**: Easy-to-use Always ON/OFF site lists with automatic conflict resolution
 - **Enhanced Job Site Support**: Specialized handling for Indeed, LinkedIn, and other job platforms
@@ -48,9 +48,9 @@ Ensure your extension folder contains these files:
 
 ## How It Works
 
-### Dual Operation Modes
-- **Redirect Mode**: Intercepts new tab attempts and redirects them to open in the same tab
-- **Block Mode**: Completely prevents new tabs from opening - ideal for focused browsing sessions
+### Redirect Functionality
+- **Same Tab Navigation**: Intercepts all new tab attempts and redirects them to open in the same tab
+- **Universal Coverage**: Works with traditional links, JavaScript buttons, and complex web applications
 
 ### Smart Site Management
 - **Always ON Sites**: Extension will always work on these sites regardless of global settings
@@ -89,15 +89,11 @@ Specialized handling for career websites:
 
 ### Quick Start
 1. Click the extension icon in your Chrome toolbar
-2. Choose your preferred mode (Redirect or Block)
-3. Optionally add sites to Always ON or Always OFF lists
-4. The extension works automatically on all other sites
+2. Optionally add sites to Always ON or Always OFF lists
+3. The extension works automatically on all other sites
 
 ### Settings Interface
 - **Master Toggle**: Enable/disable the entire extension
-- **Mode Selection**: 
-  - **Redirect Mode**: Opens blocked links in the same tab (default)
-  - **Block Mode**: Completely prevents new tabs from opening
 - **Site Management**: 
   - **Always ON**: Extension will always work on these sites
   - **Always OFF**: Extension will never work on these sites
@@ -106,7 +102,6 @@ Specialized handling for career websites:
 
 ### Expected Behavior
 - **Redirect Mode**: Links that would open new tabs redirect to the same tab
-- **Block Mode**: New tab attempts are completely blocked with no navigation
 - **Always OFF Sites**: Browser behaves normally, new tabs open as intended
 - **Disabled State**: Complete deactivation - no interference with normal browsing
 
@@ -114,9 +109,8 @@ Specialized handling for career websites:
 To confirm the extension is working:
 1. Visit any website with external links
 2. Click links that normally open new tabs
-3. **Redirect Mode**: Navigation occurs in the same tab
-4. **Block Mode**: No navigation occurs, tab stays on current page
-5. Check browser console for detailed activity logs
+3. Navigation should occur in the same tab instead of opening a new tab
+4. Check browser console for detailed activity logs
 
 ## Troubleshooting
 
@@ -141,7 +135,6 @@ The extension provides console logging for development and troubleshooting. Open
 **Current version: 1.0**
 
 ### What's New
-- **Dual Operation Modes**: Choose between Redirect and Block modes
 - **Simplified Settings Interface**: Easy-to-understand controls with visual feedback
 - **Smart Site Management**: Always ON/OFF lists with automatic conflict resolution
 - **Proper Disable Functionality**: Complete deactivation when disabled
@@ -155,6 +148,7 @@ The extension provides console logging for development and troubleshooting. Open
 - **Enhanced Job Site Support**: Specialized handling for Indeed, LinkedIn, and other career sites
 - **Real-time Settings Updates**: Changes apply immediately without page reload (except enable/disable)
 - **Comprehensive Event Handling**: Covers click, mousedown, pointerdown, and touchstart events
+- **Simplified Architecture**: Streamlined codebase focused on reliable redirect functionality
 
 This extension provides comprehensive new tab prevention while maintaining website functionality and user experience.
 

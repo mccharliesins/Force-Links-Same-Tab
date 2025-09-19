@@ -1,7 +1,6 @@
 // Default settings
 const defaultSettings = {
     enabled: true,
-    mode: 'redirect', // 'redirect' or 'block'
     enhancedJobSites: true,
     alwaysOn: [], // sites where extension always works
     alwaysOff: [], // sites where extension never works
@@ -28,8 +27,6 @@ function initializeElements() {
     elements = {
         extensionEnabled: document.getElementById('extensionEnabled'),
         statusText: document.getElementById('statusText'),
-        modeRedirect: document.getElementById('modeRedirect'),
-        modeBlock: document.getElementById('modeBlock'),
         enhancedJobSites: document.getElementById('enhancedJobSites'),
         addToAlwaysOn: document.getElementById('addToAlwaysOn'),
         addToAlwaysOff: document.getElementById('addToAlwaysOff'),
@@ -52,14 +49,6 @@ async function loadSettings() {
         // Update UI elements
         elements.extensionEnabled.checked = settings.enabled;
         elements.statusText.textContent = settings.enabled ? 'Active' : 'Disabled';
-        
-        // Update mode selection
-        if (settings.mode === 'block') {
-            elements.modeBlock.checked = true;
-        } else {
-            elements.modeRedirect.checked = true;
-        }
-        
         elements.enhancedJobSites.checked = settings.enhancedJobSites;
         
         // Update site lists
@@ -75,7 +64,6 @@ async function saveSettings() {
     try {
         const settings = {
             enabled: elements.extensionEnabled.checked,
-            mode: elements.modeBlock.checked ? 'block' : 'redirect',
             enhancedJobSites: elements.enhancedJobSites.checked
         };
         
@@ -217,8 +205,6 @@ async function removeSiteFromList(listType, site, updateUI = true) {
 function setupEventListeners() {
     // Settings controls
     elements.extensionEnabled.addEventListener('change', saveSettings);
-    elements.modeRedirect.addEventListener('change', saveSettings);
-    elements.modeBlock.addEventListener('change', saveSettings);
     elements.enhancedJobSites.addEventListener('change', saveSettings);
     
     // Site management buttons

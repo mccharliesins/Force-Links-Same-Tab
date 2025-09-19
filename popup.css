@@ -223,6 +223,45 @@ input:checked + .slider:before {
     color: #666;
 }
 
+/* Functionality info styles */
+.functionality-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9ff;
+    border: 2px solid #e3f2fd;
+    border-radius: 8px;
+    gap: 12px;
+}
+
+.info-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-content strong {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.info-content small {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.4;
+}
+
 .site-controls {
     display: flex;
     gap: 8px;
