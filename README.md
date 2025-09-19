@@ -14,12 +14,14 @@ This extension ensures that all links, buttons, and clickable elements that woul
 
 ## Key Features
 
-- **Universal Link Handling**: Processes all types of links and clickable elements
-- **JavaScript Interception**: Overrides `window.open()` calls to prevent new tabs
-- **Dynamic Content Support**: Handles links added after page load via MutationObserver
-- **Site-Specific Optimizations**: Enhanced support for job sites like Indeed and LinkedIn
-- **Button Click Handling**: Intercepts buttons that use JavaScript to open new tabs
-- **Real-time Processing**: Continuously monitors and processes new content as it loads
+- **Universal Link Handling**: Processes all types of links and clickable elements across all websites
+- **Dual Operation Modes**: Choose between Redirect Mode (open in same tab) or Block Mode (prevent new tabs completely)
+- **JavaScript Interception**: Bulletproof `window.open()` override that catches all new tab attempts
+- **Smart Site Management**: Easy-to-use Always ON/OFF site lists with automatic conflict resolution
+- **Enhanced Job Site Support**: Specialized handling for Indeed, LinkedIn, and other job platforms
+- **Dynamic Content Support**: Real-time processing of links added after page load via MutationObserver
+- **Professional Settings Interface**: Beautiful popup with intuitive controls and real-time statistics
+- **Proper Disable Functionality**: Complete deactivation when disabled - no interference with normal browsing
 
 ## Installation
 
@@ -36,30 +38,38 @@ This extension ensures that all links, buttons, and clickable elements that woul
 
 Ensure your extension folder contains these files:
 - `manifest.json` - Extension configuration and permissions
-- `content.js` - Main content script for link interception
+- `content.js` - Main content script for link interception (648+ lines)
 - `background.js` - Background service worker
+- `popup.html` - Settings interface layout
+- `popup.css` - Professional styling for the popup
+- `popup.js` - Settings functionality and user interactions
+- `ForceTabs.png` - Extension icon
 - `README.md` - Documentation
 
 ## How It Works
 
-### Link Processing
-The extension identifies and processes links using multiple methods:
-- Removes `target="_blank"` attributes from HTML elements
-- Intercepts click events on links and buttons
-- Overrides JavaScript `window.open()` function calls
-- Monitors page changes for dynamically added content
+### Dual Operation Modes
+- **Redirect Mode**: Intercepts new tab attempts and redirects them to open in the same tab
+- **Block Mode**: Completely prevents new tabs from opening - ideal for focused browsing sessions
 
-### Button Handling
-For complex web applications that use buttons instead of traditional links:
-- Detects buttons with accessibility labels indicating new tab behavior
-- Extracts URLs from data attributes and element context
-- Provides fallback navigation methods when direct URLs aren't available
+### Smart Site Management
+- **Always ON Sites**: Extension will always work on these sites regardless of global settings
+- **Always OFF Sites**: Extension will never work on these sites - browser behaves normally
+- **Automatic Conflict Resolution**: Adding a site to one list automatically removes it from the other
+- **Priority System**: Always OFF > Always ON > Default behavior
 
-### Site-Specific Features
-Enhanced functionality for popular websites:
-- **Indeed**: Handles job application buttons and extracts job URLs
-- **LinkedIn**: Processes professional network links and interactions
-- **General Sites**: Universal compatibility with modern web applications
+### Advanced Link Processing
+The extension uses multiple interception methods:
+- **HTML Attribute Removal**: Removes `target="_blank"` from links and forms
+- **Event Capture**: Intercepts click events in the capture phase before other handlers
+- **Window.open Override**: Bulletproof JavaScript function override with multiple fallbacks
+- **Dynamic Monitoring**: Real-time processing of content added after page load
+
+### Enhanced Job Site Support
+Specialized handling for career websites:
+- **Indeed**: Handles Apply Now buttons with job ID extraction and URL construction
+- **LinkedIn**: Processes professional network links and job applications
+- **Universal Compatibility**: Works with modern single-page applications and dynamic content
 
 ## Technical Implementation
 
@@ -73,30 +83,49 @@ Enhanced functionality for popular websites:
 - `activeTab`: Access to currently active browser tab
 - `scripting`: Required for content script injection
 - `tabs`: Needed for advanced tab management features
+- `storage`: Required for saving user settings and statistics
 
 ## Usage
 
-The extension operates automatically once installed. No user configuration is required.
+### Quick Start
+1. Click the extension icon in your Chrome toolbar
+2. Choose your preferred mode (Redirect or Block)
+3. Optionally add sites to Always ON or Always OFF lists
+4. The extension works automatically on all other sites
+
+### Settings Interface
+- **Master Toggle**: Enable/disable the entire extension
+- **Mode Selection**: 
+  - **Redirect Mode**: Opens blocked links in the same tab (default)
+  - **Block Mode**: Completely prevents new tabs from opening
+- **Site Management**: 
+  - **Always ON**: Extension will always work on these sites
+  - **Always OFF**: Extension will never work on these sites
+- **Statistics**: View real-time counts of intercepted links
+- **Enhanced Job Sites**: Toggle specialized handling for career websites
 
 ### Expected Behavior
-- All links that would open new tabs now open in the same tab
-- Apply buttons on job sites navigate within the current tab
-- JavaScript-powered navigation is redirected appropriately
-- Page functionality remains intact while preventing unwanted new tabs
+- **Redirect Mode**: Links that would open new tabs redirect to the same tab
+- **Block Mode**: New tab attempts are completely blocked with no navigation
+- **Always OFF Sites**: Browser behaves normally, new tabs open as intended
+- **Disabled State**: Complete deactivation - no interference with normal browsing
 
 ### Verification
 To confirm the extension is working:
 1. Visit any website with external links
 2. Click links that normally open new tabs
-3. Observe that navigation occurs in the same tab
-4. Check browser console for extension activity logs
+3. **Redirect Mode**: Navigation occurs in the same tab
+4. **Block Mode**: No navigation occurs, tab stays on current page
+5. Check browser console for detailed activity logs
 
 ## Troubleshooting
 
 ### Common Issues
-- **Links not intercepted**: Reload the extension in Chrome extensions page
-- **JavaScript errors**: Check browser console for conflict messages
-- **Site-specific problems**: Verify the extension has proper permissions
+- **Extension seems inactive**: Check that it's enabled in the popup settings
+- **Links still open new tabs**: Try adding the site to "Always ON" list
+- **Extension interfering when disabled**: Reload the page after disabling
+- **Job site buttons not working**: Enable "Enhanced job sites" option
+- **Settings not saving**: Check that Chrome has storage permissions enabled
 
 ### Debug Information
 The extension provides console logging for development and troubleshooting. Open browser developer tools to view detailed operation logs.
@@ -109,7 +138,23 @@ The extension provides console logging for development and troubleshooting. Open
 
 ## Version Information
 
-Current version: 1.0
+**Current version: 1.0**
+
+### What's New
+- **Dual Operation Modes**: Choose between Redirect and Block modes
+- **Simplified Settings Interface**: Easy-to-understand controls with visual feedback
+- **Smart Site Management**: Always ON/OFF lists with automatic conflict resolution
+- **Proper Disable Functionality**: Complete deactivation when disabled
+- **Enhanced Statistics**: Real-time tracking of intercepted links
+- **Professional UI**: Beautiful popup interface with modern design
+- **Custom Icon**: Professional extension icon for better recognition
+
+### Technical Improvements
+- **Bulletproof Window.open Override**: Multiple fallback methods for maximum compatibility
+- **Conditional Initialization**: Extension only runs when enabled, no interference when disabled
+- **Enhanced Job Site Support**: Specialized handling for Indeed, LinkedIn, and other career sites
+- **Real-time Settings Updates**: Changes apply immediately without page reload (except enable/disable)
+- **Comprehensive Event Handling**: Covers click, mousedown, pointerdown, and touchstart events
 
 This extension provides comprehensive new tab prevention while maintaining website functionality and user experience.
 
